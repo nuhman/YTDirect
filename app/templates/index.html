@@ -1,0 +1,23 @@
+{% extends "base.html" %} {% block content %}
+<p>Download YT Videos</p>
+<form method="POST" action="/download">
+  <input
+    type="text"
+    id="ytlinktext"
+    name="ytlinktext"
+    placeholder="Enter YT Video URL"
+  />
+  <select name="quality">
+    {% for quality in video_qualities %}
+    <option value="{{ quality.value }}">{{ quality.title }}</option>
+    {% endfor %}
+  </select>
+  <br />
+  <input type="checkbox" id="audioonly" name="audioonly" value="low" />
+  <label for="audioonly">Download Audio only</label>
+  <input type="checkbox" id="audioonlymp3" name="audioonlymp3" value="low" />
+  <label for="audioonlymp3">Download Audio only as MP3</label>
+  <br />
+  <input type="submit" id="ytloadbtn" value="Fetch Video Details" />
+</form>
+{% endblock %}
