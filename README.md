@@ -9,8 +9,8 @@ This application simply allows users to select different video qualities and dow
 - **Quality Selection**: Allows downloading videos in various resolutions.
 - **Audio Download**: Supports downloading audio-only streams.
 
-## Installation
-To run StreamLine Downloader, you need to have Python installed on your system. Follow these steps to set it up:
+## Installation or Self-Hosting
+To run the application, you need to have Python 3 installed on your system. Follow these steps to set it up:
 
 1. Clone the repository:
    ```bash
