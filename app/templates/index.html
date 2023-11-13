@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block content %}
 <p>Download YT Videos</p>
-<form method="POST" action="/download">
+<form id="downloadForm">
   <input
     type="text"
     id="ytlinktext"
@@ -18,6 +18,78 @@
   <input type="checkbox" id="audioonlymp3" name="audioonlymp3" value="low" />
   <label for="audioonlymp3">Download Audio only as MP3</label>
   <br />
-  <input type="submit" id="ytloadbtn" value="Fetch Video Details" />
+  <button type="button" onclick="fetchVideo()">Download Video</button>
 </form>
+<div id="download-link"></div>
+<div id="download-status"></div>
+
+<script>
+  function fetchVideo() {
+    var downloadStatus = document.getElementById("download-status");
+    downloadStatus.innerHTML = "Downloading";
+
+    // Animation for the download status
+    var dotCount = 0;
+    var downloadAnimation = setInterval(function () {
+      dotCount = (dotCount + 1) % 4;
+      downloadStatus.innerHTML = "Downloading" + ".".repeat(dotCount);
+    }, 500); // Adjust the speed of dots appearing by changing the interval time
+
+    var ytlinktext = document.getElementById("ytlinktext").value;
+    var quality = document.querySelector('select[name="quality"]').value;
+    var audioonly = document.getElementById("audioonly").checked;
+    var audioonlymp3 = document.getElementById("audioonlymp3").checked;
+
+    console.log("downloading starting,,,,");
+    console.log({
+      ytlinktext: ytlinktext,
+      quality: quality,
+      audioonly: audioonly,
+      audioonlymp3: audioonlymp3,
+    });
+
+    fetch("/proxy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        ytlinktext: ytlinktext,
+        quality: quality,
+        audioonly: audioonly,
+        audioonlymp3: audioonlymp3,
+      }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        console.log("blob got, creating link");
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        //a.style.display = "none";
+        a.href = url;
+        // Generate a filename based on the current datetime
+        var currentDateTime = new Date()
+          .toISOString()
+          .replace(/[\-\:\.]/g, "")
+          .slice(0, 15);
+        var filename = "ytvideo-" + currentDateTime + ".mp4";
+        a.download = filename;
+        console.log("going to add link");
+        document.body.appendChild(a);
+        console.log("added link");
+        a.click();
+        console.log("clicked link");
+        window.URL.revokeObjectURL(url);
+        console.log("revoiked object yurl");
+        document.body.removeChild(a);
+        clearInterval(downloadAnimation); // Stop the animation when download is ready
+        downloadStatus.innerHTML = ""; // Clear the download status
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        clearInterval(downloadAnimation); // Stop the animation on error
+        downloadStatus.innerHTML = "Error in downloading. Try again!";
+      });
+  }
+</script>
 {% endblock %}

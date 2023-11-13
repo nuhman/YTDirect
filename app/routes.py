@@ -1,12 +1,12 @@
-from flask import render_template, Flask, request, send_file
+from flask import render_template, Flask, request, send_file, Response, jsonify, stream_with_context
 from pytube import YouTube
+import requests
 import os
 from app import app
 
 @app.route('/')
 @app.route('/index')
-def index():
-    user = { 'username': 'nuhman' }
+def index():    
     video_qualities = [
         {
             'title': '720p',
@@ -29,7 +29,7 @@ def index():
             'value': '144p'
         },        
     ]
-    return render_template('index.html', user=user, video_qualities=video_qualities)
+    return render_template('index.html', video_qualities=video_qualities)
 
 @app.route('/download', methods=['POST'])
 def download_video():    
@@ -64,3 +64,25 @@ def download_video():
 
     print(f"Downloaded video: {filename}")
     return send_file(filename, as_attachment=True)
+
+@app.route('/geturl', methods=['POST'])
+def get_download_url():
+    url = request.form['ytlinktext']
+    yt = YouTube(url)
+    stream = yt.streams.get_lowest_resolution()
+    video_url = stream.url
+
+    # Instead of downloading, send the direct video URL to the client    
+    return {'download_url': video_url} 
+
+@app.route('/proxy', methods=['POST'])
+def proxy():
+    url = request.form['ytlinktext']
+    yt = YouTube(url)
+    stream = yt.streams.get_lowest_resolution()
+    video_url = stream.url
+
+    req = requests.get(video_url, stream=True)
+    return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=req.headers['Content-Type'])
+
+
