@@ -1,5 +1,4 @@
 {% extends "base.html" %} {% block content %}
-<p>Download YT Videos</p>
 <form id="downloadForm">
   <input
     type="text"
@@ -15,11 +14,13 @@
   <br />
   <input type="checkbox" id="audioonly" name="audioonly" value="low" />
   <label for="audioonly">Download Audio only</label>
-  <input type="checkbox" id="audioonlymp3" name="audioonlymp3" value="low" />
-  <label for="audioonlymp3">Download Audio only as MP3</label>
   <br />
   <button type="button" onclick="fetchVideo()">Download Video</button>
 </form>
+<div id="download-progress-container" style="display: none">
+  <progress id="download-progress" value="0" max="100"></progress>
+  <span id="download-percentage">0%</span>
+</div>
 <div id="download-link"></div>
 <div id="download-status"></div>
 
@@ -38,14 +39,12 @@
     var ytlinktext = document.getElementById("ytlinktext").value;
     var quality = document.querySelector('select[name="quality"]').value;
     var audioonly = document.getElementById("audioonly").checked;
-    var audioonlymp3 = document.getElementById("audioonlymp3").checked;
 
     console.log("downloading starting,,,,");
     console.log({
       ytlinktext: ytlinktext,
       quality: quality,
       audioonly: audioonly,
-      audioonlymp3: audioonlymp3,
     });
 
     fetch("/proxy", {
@@ -57,7 +56,6 @@
         ytlinktext: ytlinktext,
         quality: quality,
         audioonly: audioonly,
-        audioonlymp3: audioonlymp3,
       }),
     })
       .then((response) => response.blob())
@@ -83,7 +81,7 @@
         console.log("revoiked object yurl");
         document.body.removeChild(a);
         clearInterval(downloadAnimation); // Stop the animation when download is ready
-        downloadStatus.innerHTML = ""; // Clear the download status
+        downloadStatus.innerHTML = "Downloaded";
       })
       .catch((error) => {
         console.error("Error:", error);
