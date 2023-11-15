@@ -105,7 +105,9 @@ def proxy():
 @app.route('/cleanup')
 def cleanup_old_files():
     try:
-        file_directory = './'
+        #file_directory = './'
+        file_directory = os.getenv('FILE_DIRECTORY', './app/')
+        print(f"file_directory where files are stored: {file_directory}")
         current_time = datetime.now()
         files_count = 0
 
