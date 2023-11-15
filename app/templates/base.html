@@ -4,10 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% if title %}
-    <title>{{ title }} - YT Downloader</title>
+    <title>YTDirect - {{ title }}</title>
     {% else %}
-    <title>Home - YT Downloader</title>
+    <title>YTDirect - Home</title>
     {% endif %}
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/1.2.0/tailwind.min.css"
+    />
   </head>
   <body>
     {% block content %}{% endblock %}

@@ -1,99 +1,82 @@
 {% extends "base.html" %} {% block content %}
-<form method="POST" action="/download" id="downloadForm">
-  <input
-    type="text"
-    id="ytlinktext"
-    name="ytlinktext"
-    placeholder="Enter YT Video URL"
-  />
-  <select name="quality">
-    {% for quality in video_qualities %}
-    <option value="{{ quality.value }}">{{ quality.title }}</option>
-    {% endfor %}
-  </select>
-  <br />
-  <input type="checkbox" id="audioonly" name="audioonly" value="low" />
-  <label for="audioonly">Download Audio only</label>
-  <br />
-  <button type="button" onclick="fetchVideo()">
-    Download Video Via Client
-  </button>
-  <input type="submit" value="Download Video via Server" />
-</form>
-<form method="GET" action="/cleanup">
-  <input type="submit" value="Cleanup files" />
-</form>
-<div id="download-progress-container" style="display: none">
-  <progress id="download-progress" value="0" max="100"></progress>
-  <span id="download-percentage">0%</span>
+<div class="p-8 pt-8 pb-4">
+  <p
+    class="text-center mb-4 text-2xl font-extrabold leading-none tracking-tight text-blue-500 md:text-2xl lg:text-4xl"
+  >
+    YTDirect
+  </p>
+  <form method="POST" action="/download" id="downloadForm">
+    <div>
+      <label
+        for="ytlinktext"
+        class="block mb-2 text-sm font-medium text-gray-700"
+        >Paste your YT Video URL</label
+      >
+      <input
+        type="text"
+        id="ytlinktext"
+        name="ytlinktext"
+        autofocus
+        placeholder="https://www.youtube.com/watch?v=id"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block lg:w-6/12 w-full p-3"
+      />
+    </div>
+    <div class="flex mt-4 mb-4 items-center gap-6">
+      <div>
+        <div class="relative">
+          <select
+            name="quality"
+            id="quality"
+            class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+          >
+            {% for quality in video_qualities %}
+            <option value="{{ quality.value }}">{{ quality.title }}</option>
+            {% endfor %}
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="audioonly"
+          name="audioonly"
+          value="low"
+          class="rounded-full h-8 w-8 cursor-pointer bg-red-100 border-red-300 text-red-600 focus:ring-red-600 outline-none focus:ring-2 checked:bg-blue-500"
+        />
+        <label for="audioonly" class="mb-2 text-sm font-medium text-gray-700"
+          >Audio only</label
+        >
+      </div>
+    </div>
+    <div>
+      <div>
+        <input
+          type="submit"
+          value="Download"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+        />
+      </div>
+    </div>
+  </form>
+  <form method="GET" action="/cleanup" class="mt-4">
+    <input
+      type="submit"
+      value="Cleanup files"
+      class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded cursor-pointer"
+    />
+  </form>
 </div>
-<div id="download-link"></div>
-<div id="download-status"></div>
-
-<script>
-  function fetchVideo() {
-    var downloadStatus = document.getElementById("download-status");
-    downloadStatus.innerHTML = "Downloading";
-
-    // Animation for the download status
-    var dotCount = 0;
-    var downloadAnimation = setInterval(function () {
-      dotCount = (dotCount + 1) % 4;
-      downloadStatus.innerHTML = "Downloading" + ".".repeat(dotCount);
-    }, 500); // Adjust the speed of dots appearing by changing the interval time
-
-    var ytlinktext = document.getElementById("ytlinktext").value;
-    var quality = document.querySelector('select[name="quality"]').value;
-    var audioonly = document.getElementById("audioonly").checked;
-
-    console.log("downloading starting,,,,");
-    console.log({
-      ytlinktext: ytlinktext,
-      quality: quality,
-      audioonly: audioonly,
-    });
-
-    fetch("/proxy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        ytlinktext: ytlinktext,
-        quality: quality,
-        audioonly: audioonly,
-      }),
-    })
-      .then((response) => response.blob())
-      .then((blob) => {
-        console.log("blob got, creating link");
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        //a.style.display = "none";
-        a.href = url;
-        // Generate a filename based on the current datetime
-        var currentDateTime = new Date()
-          .toISOString()
-          .replace(/[\-\:\.]/g, "")
-          .slice(0, 15);
-        var filename = "ytvideo-" + currentDateTime + ".mp4";
-        a.download = filename;
-        console.log("going to add link");
-        document.body.appendChild(a);
-        console.log("added link");
-        a.click();
-        console.log("clicked link");
-        window.URL.revokeObjectURL(url);
-        console.log("revoiked object yurl");
-        document.body.removeChild(a);
-        clearInterval(downloadAnimation); // Stop the animation when download is ready
-        downloadStatus.innerHTML = "Downloaded";
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        clearInterval(downloadAnimation); // Stop the animation on error
-        downloadStatus.innerHTML = "Error in downloading. Try again!";
-      });
-  }
-</script>
 {% endblock %}
