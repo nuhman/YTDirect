@@ -47,7 +47,10 @@ def download_video():
         stream = yt.streams.filter(only_audio=True).order_by('abr').first()
         print(f"Downloading audio only")    
     elif selected_quality:
-        stream = yt.streams.filter(res=selected_quality).first()
+        if selected_quality == 'Low Res':
+            stream = yt.streams.get_lowest_resolution()
+        else:
+            stream = yt.streams.filter(res=selected_quality).first()
         print(f"Downloading selected resolution: {stream.resolution}")
     else:
         stream = yt.streams.get_highest_resolution()
@@ -78,7 +81,7 @@ def get_download_url():
 def proxy():
     url = request.form['ytlinktext']
     selected_quality = request.form.get('quality')
-    audioonly = request.form.get('audioonly')
+    audioonly = request.form.get('audioonly') == 'low'
     print("audiononlu", audioonly)
     yt = YouTube(url)
 
@@ -86,12 +89,12 @@ def proxy():
         stream = yt.streams.filter(only_audio=True).order_by('abr').first()
         print(f"Downloading audio only")
     else:
-        if selected_quality == 'Low Res': 
+        if selected_quality == 'Low Res':
             stream = yt.streams.get_lowest_resolution()
-            print(f"Downloading lowest resolution: {stream.resolution}")    
+            print(f"Downloading lowest resolution: {stream.resolution}")
         else:
             stream = yt.streams.filter(res=selected_quality).first()
-            print(f"Downloading selected resolution: {stream.resolution}")    
+            print(f"Downloading selected resolution: {stream.resolution}")
     
     video_url = stream.url
 

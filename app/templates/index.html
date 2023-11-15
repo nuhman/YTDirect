@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% block content %}
-<form id="downloadForm">
+<form method="POST" action="/download" id="downloadForm">
   <input
     type="text"
     id="ytlinktext"
@@ -15,7 +15,8 @@
   <input type="checkbox" id="audioonly" name="audioonly" value="low" />
   <label for="audioonly">Download Audio only</label>
   <br />
-  <button type="button" onclick="fetchVideo()">Download Video</button>
+  <button type="button" onclick="fetchVideo()">Download Video Via Client</button>
+  <input type="submit" value="Download Video via Server" />
 </form>
 <div id="download-progress-container" style="display: none">
   <progress id="download-progress" value="0" max="100"></progress>
