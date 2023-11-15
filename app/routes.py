@@ -2,6 +2,7 @@ from flask import render_template, Flask, request, send_file, Response, jsonify,
 from pytube import YouTube
 import requests
 import os
+from datetime import datetime, timedelta
 from app import app
 
 @app.route('/')
@@ -101,4 +102,30 @@ def proxy():
     req = requests.get(video_url, stream=True)
     return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=req.headers['Content-Type'])
 
+@app.route('/cleanup')
+def cleanup_old_files():
+    try:
+        file_directory = './'
+        current_time = datetime.now()
+        files_count = 0
 
+        for filename in os.listdir(file_directory):
+            if filename.endswith(('.mp4', '.mp3')):
+                filepath = os.path.join(file_directory, filename)
+                file_time = datetime.fromtimestamp(os.path.getmtime(filepath))
+                
+                # Delete files older than 1 hour (or any other threshold)                  
+                print(f"filename: {filename}, filepath: {filepath}, file_time: {file_time}")
+                print(f"time_diff more than 15 mins: {current_time - file_time > timedelta(seconds=10)}")
+                if current_time - file_time > timedelta(seconds=10):
+                    print(f"deleting file: {filepath}")
+                    os.remove(filepath)      
+                    files_count += 1
+
+        return {
+            'message': "cleanup success :)",
+            'delete_count': files_count
+        }
+    except BaseException as error:
+        print('An exception occurred: {}'.format(error))
+        return {'message': "cleanup failed :( Check Logs"}
